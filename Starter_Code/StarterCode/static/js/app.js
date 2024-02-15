@@ -7,16 +7,17 @@ function buildMetadata(sample, metadata) {
     d3.json(url).then((data) => {
         let metadata = data.metadata;
         let result = metadata.find(metadataObj => metadataObj.id == sample);
-
+        // console.log("Metadata for sample", sample, ":", result);
         // Use d3 to select the panel with id of `#sample-metadata`
         let PANEL = d3.select("#sample-metadata");
 
         // Use `.html("") to clear any existing metadata
         PANEL.html("");
 
-        // Hint: Inside the loop, you will need to use d3 to append new
+        // Inside the loop, use d3 to append new
         // tags for each key-value in the metadata.
         Object.entries(result).forEach(([key, value]) => {
+            // console.log(`${key}: ${value}`);
             PANEL.append("h6").text(`${key}: ${value}`);
         });
     });
@@ -27,6 +28,7 @@ function buildCharts(sample, metadata) {
         let samples = data.samples;
         let resultArray = samples.filter(sampleObj => sampleObj.id == sample);
         let result = resultArray[0];
+        // console.log("Result for sample", sample, ":", result);
 
         let otu_ids = result.otu_ids;
         let otu_labels = result.otu_labels;
@@ -107,6 +109,14 @@ let gaugeData = [
 
 let gaugeLayout = { width: 600, height: 500, margin: { t: 0, b: 0 } };
 
+// Log data for debugging
+// console.log("Sample ID:", sample);
+// console.log("Washing Frequency:", metadata.find(metaObj => metaObj.id == sample).wfreq);
+
+// Log gauge data
+// console.log("Gauge Data:", gaugeData);
+// console.log("Gauge Layout:", gaugeLayout);
+
 Plotly.newPlot("gauge", gaugeData, gaugeLayout);
 });
 }
@@ -121,6 +131,8 @@ function init() {
     d3.json(url).then((data) => {
         let sampleNames = data.names;
         let metadata = data.metadata; // Fetch metadata once
+        // console.log("Sample Names:", sampleNames);
+        // console.log("Metadata:", metadata);
         for (let i = 0; i < sampleNames.length; i++) {
             selector.append("option")
                 .text(sampleNames[i])
