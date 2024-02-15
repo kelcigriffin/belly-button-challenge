@@ -3,7 +3,7 @@
 // // Fetch data from the URL
 const url = "https://2u-data-curriculum-team.s3.amazonaws.com/dataviz-classroom/v1.1/14-Interactive-Web-Visualizations/02-Homework/samples.json";
 
-function buildMetadata(sample) {
+function buildMetadata(sample, metadata) {
     d3.json(url).then((data) => {
         let metadata = data.metadata;
         let result = metadata.find(metadataObj => metadataObj.id == sample);
@@ -22,7 +22,7 @@ function buildMetadata(sample) {
     });
 }
 
-function buildCharts(sample) {
+function buildCharts(sample, metadata) {
     d3.json(url).then((data) => {
         let samples = data.samples;
         let resultArray = samples.filter(sampleObj => sampleObj.id == sample);
@@ -75,8 +75,43 @@ function buildCharts(sample) {
         };
 
         Plotly.newPlot("bar", barData, barLayout);
-    });
+
+        // BONUS //
+// I did my best here to make it like the example, but I wasn't able to figure out how to get 
+// the number ranges or the gauge indicator to show... so I just used the bar like they did in the 
+// Plotly documentation, and played with hex codes for different colors.
+// Build the Gauge Chart
+let gaugeData = [
+    {
+        type: "indicator",
+        mode: "gauge+number",
+        value: metadata.find(metaObj => metaObj.id == sample).wfreq,
+        title: { text: "Weekly Washing Frequency" },
+        gauge: {
+            axis: { range: [0, 9] },
+            steps: [
+                { range: [0, 1], color: "#FFD1D1" },
+                { range: [1, 2], color: "lightgray" },
+                { range: [2, 3], color: "#C1EAC0" },
+                { range: [3, 4], color: "#A3E4A9" },
+                { range: [4, 5], color: "#85DE92" },
+                { range: [5, 6], color: "#67D87A" },
+                { range: [6, 7], color: "#49D264" },
+                { range: [7, 8], color: "#2BCD4D" },
+                { range: [8, 9], color: "#0DC737" },
+            ],
+            bar: { color: "#E6E6FA97" }
+        }
+    }
+];
+
+let gaugeLayout = { width: 600, height: 500, margin: { t: 0, b: 0 } };
+
+Plotly.newPlot("gauge", gaugeData, gaugeLayout);
+});
 }
+
+// END BONUS //
 
 function init() {
     // Grab a reference to the dropdown select element
@@ -85,7 +120,7 @@ function init() {
     // Use the list of sample names to populate the select options
     d3.json(url).then((data) => {
         let sampleNames = data.names;
-
+        let metadata = data.metadata; // Fetch metadata once
         for (let i = 0; i < sampleNames.length; i++) {
             selector.append("option")
                 .text(sampleNames[i])
@@ -94,16 +129,21 @@ function init() {
 
         // Use the first sample from the list to build the initial plots
         let firstSample = sampleNames[0];
-        buildCharts(firstSample);
-        buildMetadata(firstSample);
+        buildCharts(firstSample, metadata);
+        buildMetadata(firstSample, metadata);
     });
 }
 
 function optionChanged(newSample) {
     // Fetch new data each time a new sample is selected
-    buildCharts(newSample);
-    buildMetadata(newSample);
+    d3.json(url).then((data) => {
+        let metadata = data.metadata; // Fetch metadata again
+        buildCharts(newSample, metadata); // Pass metadata to buildCharts
+        buildMetadata(newSample, metadata); // Pass metadata to buildMetadata
+    });
 }
+
+
 
 // Initialize the dashboard
 init();
